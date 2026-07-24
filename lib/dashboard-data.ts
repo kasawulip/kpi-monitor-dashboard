@@ -287,6 +287,149 @@ export function getDashboardData(
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* DRO (District Registration Officer) — single assigned district scope       */
+/* -------------------------------------------------------------------------- */
+
+// The signed-in officer for this prototype. A DRO is bound to one district.
+export const droContext = {
+  officerName: 'Nabirye Sarah',
+  role: 'DRO' as const,
+  roleLabel: 'District Registration Officer',
+  region: 'Eastern Region',
+  district: 'Tororo',
+  officeCode: 'NIRA/EAS/TOR',
+}
+
+export interface DistrictSummary {
+  programme: Programme
+  scopeLabel: string
+  kpis: Kpi[]
+  achievement: number
+  status: Status
+  achieved: number
+  target: number
+  activeRas: number
+  rasReporting: number
+  rasTotal: number
+  dailyTarget: number
+}
+
+function districtStats(programme: Programme, region: string, district: string) {
+  const dRand = seeded(hashString(`${district}|${region}|${programme.id}|exercise`))
+  const baseFactor = programmeFactor[programme.id]
+  const variance = (dRand() - 0.5) * 0.5
+  const pct = Math.max(6, Math.min(98, (baseFactor + variance) * 100))
+  const rasTotal = Math.round(14 + dRand() * 22)
+  const rasReporting = Math.round(rasTotal * (0.55 + dRand() * 0.4))
+  const dailyTarget = rasTotal * programme.targetPerRaDay
+  const cumulativeTarget = dailyTarget * 100
+  const achieved = Math.round(cumulativeTarget * (pct / 100))
+  return {
+    pct: Math.round(pct * 10) / 10,
+    rasTotal,
+    rasReporting: Math.min(rasReporting, rasTotal),
+    dailyTarget,
+    cumulativeTarget,
+    achieved,
+  }
+}
+
+// District-scoped dashboard for a single district (the DRO's view).
+export function getDistrictSummary(
+  programmeId: ProgrammeId,
+  region: string,
+  district: string,
+): DistrictSummary {
+  const programme = programmes.find((p) => p.id === programmeId) ?? programmes[0]
+  const { pct, rasTotal, rasReporting, dailyTarget, cumulativeTarget, achieved } = districtStats(
+    programme,
+    region,
+    district,
+  )
+  const status = statusFor(pct)
+  const remaining = Math.max(0, cumulativeTarget - achieved)
+  const projected = Math.round(pct * 1.02 * 10) / 10
+
+  const kpis: Kpi[] = [
+    {
+      key: 'completion',
+      label: 'Completion rate',
+      value: `${pct}%`,
+      caption: 'Cumulative achieved vs. expected to date',
+      status,
+      emphasis: true,
+    },
+    {
+      key: 'projected',
+      label: 'Projected completion',
+      value: `${projected}%`,
+      caption: 'At current pace, by Day 100',
+      status: statusFor(projected),
+    },
+    {
+      key: 'daily-target',
+      label: 'Daily target',
+      value: fmt(dailyTarget),
+      caption: `Expected ${programme.unitLabel} today`,
+    },
+    {
+      key: 'achieved',
+      label: 'Achieved to date',
+      value: fmt(achieved),
+      caption: 'Cumulative actual output',
+    },
+    {
+      key: 'remaining',
+      label: 'Remaining',
+      value: fmt(remaining),
+      caption: 'To reach cumulative target',
+    },
+    {
+      key: 'ras-reporting',
+      label: 'RAs reporting today',
+      value: `${rasReporting}/${rasTotal}`,
+      caption: 'Registration assistants with an entry',
+      status: statusFor((rasReporting / rasTotal) * 100),
+    },
+  ]
+
+  return {
+    programme,
+    scopeLabel: `${district}, ${region.replace(' Region', '')}`,
+    kpis,
+    achievement: pct,
+    status,
+    achieved,
+    target: cumulativeTarget,
+    activeRas: rasTotal,
+    rasReporting,
+    rasTotal,
+    dailyTarget,
+  }
+}
+
+// Per-programme summary cards for a single district (reuses ProgrammeSummary shape).
+export function getDistrictProgrammeSummaries(
+  region: string,
+  district: string,
+): ProgrammeSummary[] {
+  return programmes.map((p) => {
+    const s = getDistrictSummary(p.id, region, district)
+    return {
+      id: p.id,
+      name: p.name,
+      shortName: p.shortName,
+      unitLabel: p.unitLabel,
+      achievement: s.achievement,
+      status: s.status,
+      achieved: s.achieved,
+      target: s.target,
+      activeRas: s.activeRas,
+    }
+  })
+}
+
 export interface ProgrammeSummary {
   id: ProgrammeId
   name: string

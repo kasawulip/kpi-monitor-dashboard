@@ -19,9 +19,17 @@ interface ProgrammeOverviewProps {
   summaries: ProgrammeSummary[]
   active: ProgrammeId
   onSelect: (id: ProgrammeId) => void
+  heading?: string
+  scopeNote?: string
 }
 
-export function ProgrammeOverview({ summaries, active, onSelect }: ProgrammeOverviewProps) {
+export function ProgrammeOverview({
+  summaries,
+  active,
+  onSelect,
+  heading = 'Programme overview',
+  scopeNote = 'Cumulative · National',
+}: ProgrammeOverviewProps) {
   return (
     <section aria-labelledby="programme-overview-heading">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -29,9 +37,9 @@ export function ProgrammeOverview({ summaries, active, onSelect }: ProgrammeOver
           id="programme-overview-heading"
           className="text-sm font-semibold uppercase tracking-wide text-muted-foreground"
         >
-          Programme overview
+          {heading}
         </h2>
-        <span className="text-xs text-muted-foreground">Cumulative · National</span>
+        <span className="text-xs text-muted-foreground">{scopeNote}</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
