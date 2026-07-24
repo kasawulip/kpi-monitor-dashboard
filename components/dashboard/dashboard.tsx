@@ -18,7 +18,8 @@ import { cn } from '@/lib/utils'
 export function Dashboard() {
   const [programme, setProgramme] = useState<ProgrammeId>('card-issuance')
   const [region, setRegion] = useState<string | null>(null)
-  const [range, setRange] = useState<DateRange['id']>('today')
+  // Results are always cumulative: from the start of the exercise through today.
+  const range: DateRange['id'] = 'exercise'
 
   const data = useMemo(
     () => getDashboardData(programme, region, range),
@@ -52,10 +53,8 @@ export function Dashboard() {
         <FilterBar
           programme={programme}
           region={region}
-          range={range}
           onProgramme={setProgramme}
           onRegion={setRegion}
-          onRange={setRange}
         />
 
         {/* KPIs */}

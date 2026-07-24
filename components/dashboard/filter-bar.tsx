@@ -1,32 +1,23 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import {
-  dateRanges,
-  programmes,
-  regionNames,
-  type DateRange,
-  type ProgrammeId,
-} from '@/lib/dashboard-data'
-import { ChevronDown, MapPin, Layers } from 'lucide-react'
+import { programmes, regionNames, type ProgrammeId } from '@/lib/dashboard-data'
+import { ChevronDown, MapPin, Layers, CalendarRange } from 'lucide-react'
 
 interface FilterBarProps {
   programme: ProgrammeId
   region: string | null
-  range: DateRange['id']
   onProgramme: (id: ProgrammeId) => void
   onRegion: (region: string | null) => void
-  onRange: (range: DateRange['id']) => void
 }
 
-export function FilterBar({
-  programme,
-  region,
-  range,
-  onProgramme,
-  onRegion,
-  onRange,
-}: FilterBarProps) {
+export function FilterBar({ programme, region, onProgramme, onRegion }: FilterBarProps) {
+  const today = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
   return (
     <section
       aria-label="Dashboard filters"
@@ -63,7 +54,7 @@ export function FilterBar({
 
       <div className="mt-4 h-px bg-border" />
 
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <div className="mt-4">
         {/* Geographic scope */}
         <div>
           <div className="flex items-center gap-2">
@@ -108,36 +99,19 @@ export function FilterBar({
           </div>
         </div>
 
-        {/* Date range */}
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Reporting period
-          </span>
-          <div
-            className="mt-2.5 flex flex-wrap gap-2"
-            role="group"
-            aria-label="Select reporting period"
-          >
-            {dateRanges.map((d) => {
-              const active = d.id === range
-              return (
-                <button
-                  key={d.id}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => onRange(d.id)}
-                  className={cn(
-                    'inline-flex min-h-11 items-center rounded-xl border px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                    active
-                      ? 'border-primary bg-accent text-accent-foreground'
-                      : 'border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
-                  )}
-                >
-                  {d.label}
-                </button>
-              )
-            })}
-          </div>
+        {/* Cumulative reporting period notice */}
+        <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-border bg-accent/50 px-3.5 py-3">
+          <CalendarRange
+            className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Figures are{' '}
+            <span className="font-medium text-foreground">cumulative from the start of the exercise</span>{' '}
+            through today,{' '}
+            <span className="font-medium text-foreground">{today}</span>. Selecting a programme or
+            region updates the totals for that full period.
+          </p>
         </div>
       </div>
     </section>
