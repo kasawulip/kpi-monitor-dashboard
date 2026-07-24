@@ -12,7 +12,6 @@ import { KpiGrid } from './kpi-grid'
 import { ExerciseProgress } from './exercise-progress'
 import { RegionalPerformance } from './regional-performance'
 import { Heatmap } from './heatmap'
-import { DistrictTable } from './district-table'
 import { DistrictSnapshot } from './district-snapshot'
 import { statusMeta } from '@/lib/dashboard-data'
 import { cn } from '@/lib/utils'
@@ -76,17 +75,6 @@ export function Dashboard() {
             onSelectRegion={region ? undefined : (r) => setRegion(r)}
           />
           <Heatmap regions={data.regions} programmeName={data.programme.name} />
-        </div>
-
-        {/* District detail */}
-        <div className="mt-5">
-          <DistrictTable
-            districts={data.districts}
-            programmeName={data.programme.name}
-            totalOutput={data.totalOutput}
-            districtsWithEntries={data.districtsWithEntries}
-            districtsTotal={data.districtsTotal}
-          />
         </div>
 
         {/* Region → district → programme → date drill-down */}
