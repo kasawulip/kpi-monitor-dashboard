@@ -13,6 +13,7 @@ import { ExerciseProgress } from './exercise-progress'
 import { RegionalPerformance } from './regional-performance'
 import { Heatmap } from './heatmap'
 import { DistrictTable } from './district-table'
+import { DistrictSnapshot } from './district-snapshot'
 import { statusMeta } from '@/lib/dashboard-data'
 import { cn } from '@/lib/utils'
 
@@ -86,6 +87,11 @@ export function Dashboard() {
             districtsWithEntries={data.districtsWithEntries}
             districtsTotal={data.districtsTotal}
           />
+        </div>
+
+        {/* Region → district → programme → date drill-down */}
+        <div className="mt-5">
+          <DistrictSnapshot defaultProgramme={programme} />
         </div>
 
         <footer className="mt-8 border-t border-border pt-4 text-center text-xs text-muted-foreground">
