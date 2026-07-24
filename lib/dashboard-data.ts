@@ -133,7 +133,7 @@ const rangeFactor: Record<DateRange['id'], number> = {
   exercise: 1,
 }
 
-const districtsByRegion: Record<string, string[]> = {
+export const districtsByRegion: Record<string, string[]> = {
   'Central Region': ['Kampala Central', 'Wakiso', 'Mukono', 'Mpigi', 'Luweero', 'Nakaseke'],
   'Eastern Region': ['Jinja', 'Mbale', 'Soroti', 'Tororo', 'Iganga', 'Kumi'],
   'Mid Western Region': ['Hoima', 'Masindi', 'Kibaale', 'Kagadi', 'Buliisa', 'Kakumiro'],
@@ -284,6 +284,124 @@ export function getDashboardData(
     totalOutput,
     districtsWithEntries,
     districtsTotal: districts.length,
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* District daily snapshot (region → district → programme → date drill-down)  */
+/* -------------------------------------------------------------------------- */
+
+export interface RaDetail {
+  name: string
+  regNo: string
+  captured: number
+}
+
+export interface DaySnapshot {
+  dateISO: string
+  dateLabel: string
+  captureNoun: string
+  totalCaptured: number
+  avgPerRa: number
+  rasWithEntry: number
+  rasWithoutEntry: number
+  rasTotal: number
+  ras: RaDetail[]
+}
+
+const captureNoun: Record<ProgrammeId, string> = {
+  'card-issuance': 'cards issued',
+  'nid-registration': 'registrations',
+  opencrvs: 'notifications',
+}
+
+const regionCode: Record<string, string> = {
+  'Central Region': 'CEN',
+  'Eastern Region': 'EAS',
+  'Mid Western Region': 'MDW',
+  'North Eastern Region': 'NEA',
+  'North Western Region': 'NWE',
+  'Western Region': 'WES',
+}
+
+const raSurnames = [
+  'MUKODIRI', 'AKUMU', 'OKELLO', 'NAKATO', 'WASSWA', 'ATIM', 'OPIO', 'NABIRYE',
+  'SSALI', 'KATO', 'BABIRYE', 'OCEN', 'ADONG', 'MUGISHA', 'TUMUSIIME', 'SSEMPALA',
+  'NALUBEGA', 'OJOK', 'ACHAN', 'KIZZA', 'NANTEZA', 'WANYAMA', 'NAMUTEBI', 'EKAU',
+  'LOKO', 'KEMIGISHA', 'NAMPIJJA', 'SSEBUGWAWO', 'ANGOM', 'OWORI',
+]
+
+const raGivenNames = [
+  'BARBRA', 'PAULA VERONICA', 'JOSEPH', 'MARY', 'GRACE', 'PETER', 'SARAH',
+  'DAVID', 'ESTHER', 'JAMES', 'RUTH', 'SAMUEL', 'FAITH', 'MOSES', 'JOAN',
+  'RONALD', 'BRENDA', 'ISAAC', 'DORCUS', 'SIMON', 'PATIENCE', 'ALLAN',
+  'HARRIET', 'TIMOTHY', 'REBECCA', 'DENIS',
+]
+
+const monthShort = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+]
+
+export function formatSnapshotDate(iso: string) {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return `${d} ${monthShort[m - 1]} ${y}`
+}
+
+function districtCode(name: string) {
+  return name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase()
+}
+
+export function getDaySnapshot(
+  programmeId: ProgrammeId,
+  region: string,
+  district: string,
+  dateISO: string,
+): DaySnapshot {
+  const programme = programmes.find((p) => p.id === programmeId) ?? programmes[0]
+  const noun = captureNoun[programme.id]
+  const rand = seeded(hashString(`${district}|${region}|${programme.id}|${dateISO}`))
+
+  const rasTotal = 12 + Math.floor(rand() * 16) // 12–27 RAs
+  const rCode = regionCode[region] ?? region.slice(0, 3).toUpperCase()
+  const dCode = districtCode(district)
+
+  const usedSeq = new Set<number>()
+  const ras: RaDetail[] = []
+  for (let i = 0; i < rasTotal; i++) {
+    const surname = raSurnames[Math.floor(rand() * raSurnames.length)]
+    const given = raGivenNames[Math.floor(rand() * raGivenNames.length)]
+    let seq = 1 + Math.floor(rand() * 120)
+    while (usedSeq.has(seq)) seq = (seq % 120) + 1
+    usedSeq.add(seq)
+    const hasEntry = rand() > 0.14
+    const captured = hasEntry
+      ? Math.max(1, Math.round(programme.targetPerRaDay * (0.5 + rand() * 0.95)))
+      : 0
+    ras.push({
+      name: `${surname} ${given}`,
+      regNo: `NIRA/${rCode}/${dCode}/RA/${String(seq).padStart(3, '0')}`,
+      captured,
+    })
+  }
+
+  const totalCaptured = ras.reduce((s, r) => s + r.captured, 0)
+  const rasWithEntry = ras.filter((r) => r.captured > 0).length
+  const rasWithoutEntry = rasTotal - rasWithEntry
+  const avgPerRa = rasWithEntry ? Math.round(totalCaptured / rasWithEntry) : 0
+
+  ras.sort((a, b) => b.captured - a.captured || a.name.localeCompare(b.name))
+
+  return {
+    dateISO,
+    dateLabel: formatSnapshotDate(dateISO),
+    captureNoun: noun,
+    totalCaptured,
+    avgPerRa,
+    rasWithEntry,
+    rasWithoutEntry,
+    rasTotal,
+    ras,
   }
 }
 
