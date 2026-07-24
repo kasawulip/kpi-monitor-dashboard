@@ -35,7 +35,7 @@ export function Dashboard() {
         {/* Scope summary */}
         <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <h2 className="text-lg font-semibold text-foreground md:text-xl">
-            Performance snapshot
+            National &amp; Regional Performance Snapshot
           </h2>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
             {data.programme.name}
