@@ -287,6 +287,39 @@ export function getDashboardData(
   }
 }
 
+export interface ProgrammeSummary {
+  id: ProgrammeId
+  name: string
+  shortName: string
+  unitLabel: string
+  achievement: number
+  status: Status
+  achieved: number
+  target: number
+  activeRas: number
+}
+
+// National cumulative summary for every programme — powers the overview band.
+export function getProgrammeSummaries(): ProgrammeSummary[] {
+  return programmes.map((p) => {
+    const d = getDashboardData(p.id, null, 'exercise')
+    const achieved = d.regions.reduce((s, r) => s + r.achieved, 0)
+    const target = d.regions.reduce((s, r) => s + r.target, 0)
+    const activeRas = d.regions.reduce((s, r) => s + r.activeRas, 0)
+    return {
+      id: p.id,
+      name: p.name,
+      shortName: p.shortName,
+      unitLabel: p.unitLabel,
+      achievement: d.nationalAchievement,
+      status: d.nationalStatus,
+      achieved,
+      target,
+      activeRas,
+    }
+  })
+}
+
 /* -------------------------------------------------------------------------- */
 /* District daily snapshot (region → district → programme → date drill-down)  */
 /* -------------------------------------------------------------------------- */
