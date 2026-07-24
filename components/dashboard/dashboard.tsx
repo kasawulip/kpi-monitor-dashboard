@@ -9,7 +9,6 @@ import {
 import { SiteHeader } from './site-header'
 import { FilterBar } from './filter-bar'
 import { KpiGrid } from './kpi-grid'
-import { ExerciseProgress } from './exercise-progress'
 import { RegionalPerformance } from './regional-performance'
 import { Heatmap } from './heatmap'
 import { DistrictSnapshot } from './district-snapshot'
@@ -59,12 +58,9 @@ export function Dashboard() {
           onRange={setRange}
         />
 
-        {/* KPIs + progress */}
-        <div className="mt-5 grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <KpiGrid kpis={data.kpis} />
-          </div>
-          <ExerciseProgress achievement={data.nationalAchievement} status={data.nationalStatus} />
+        {/* KPIs */}
+        <div className="mt-5">
+          <KpiGrid kpis={data.kpis} />
         </div>
 
         {/* Regional + heatmap */}
