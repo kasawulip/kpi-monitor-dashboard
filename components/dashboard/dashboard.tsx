@@ -13,11 +13,13 @@ import { StatusBanner } from './status-banner'
 import { ProgrammeOverview } from './programme-overview'
 import { KpiGrid } from './kpi-grid'
 import { DistrictSnapshot } from './district-snapshot'
+import { DailyEntryDialog } from './daily-entry-dialog'
 import { ChevronRight, MapPin, Building2, ClipboardPlus, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function Dashboard() {
   const [programme, setProgramme] = useState<ProgrammeId>('nid-registration')
+  const [entryOpen, setEntryOpen] = useState(false)
 
   const data = useMemo(
     () => getDistrictSummary(programme, droContext.region, droContext.district),
@@ -131,6 +133,7 @@ export function Dashboard() {
           </div>
           <button
             type="button"
+            onClick={() => setEntryOpen(true)}
             className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <ClipboardPlus className="size-4" aria-hidden="true" />
@@ -154,6 +157,13 @@ export function Dashboard() {
           </p>
         </footer>
       </main>
+
+      <DailyEntryDialog
+        open={entryOpen}
+        onClose={() => setEntryOpen(false)}
+        programme={data.programme}
+        dateLabel={today}
+      />
     </div>
   )
 }
