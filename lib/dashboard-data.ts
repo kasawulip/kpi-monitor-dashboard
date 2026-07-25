@@ -442,6 +442,88 @@ export interface ProgrammeSummary {
   activeRas: number
 }
 
+/* -------------------------------------------------------------------------- */
+/* Daily data entry lookups (RAs + non-working reasons) — DRO workflow        */
+/* -------------------------------------------------------------------------- */
+
+export interface RaOption {
+  id: string
+  name: string
+  code: string
+  programmeId: ProgrammeId
+}
+
+export interface NonWorkingReason {
+  code: string
+  name: string
+  description: string
+  commentRequired: boolean
+}
+
+// Mirrors the reference project's non-working-day reason catalogue.
+export const nonWorkingReasons: NonWorkingReason[] = [
+  {
+    code: 'PUBLIC_HOLIDAY',
+    name: 'Public holiday',
+    description: 'A gazetted national or public holiday on which the programme did not operate.',
+    commentRequired: false,
+  },
+  {
+    code: 'EQUIPMENT_FAILURE',
+    name: 'Equipment / kit failure',
+    description: 'Registration kits or biometric equipment were non-functional district-wide.',
+    commentRequired: true,
+  },
+  {
+    code: 'POWER_OUTAGE',
+    name: 'Power outage',
+    description: 'Sustained loss of power prevented all operations for the day.',
+    commentRequired: true,
+  },
+  {
+    code: 'SECURITY',
+    name: 'Security / civil disturbance',
+    description: 'Insecurity or civil disturbance made operations unsafe across the district.',
+    commentRequired: true,
+  },
+  {
+    code: 'WEATHER',
+    name: 'Severe weather / flooding',
+    description: 'Extreme weather blocked access to registration points district-wide.',
+    commentRequired: true,
+  },
+  {
+    code: 'OTHER',
+    name: 'Other (explain)',
+    description: 'Any other district-wide reason not covered above.',
+    commentRequired: true,
+  },
+]
+
+// Stable list of active RAs for a district on a given programme.
+export function getDistrictRas(
+  programmeId: ProgrammeId,
+  region: string,
+  district: string,
+): RaOption[] {
+  const rand = seeded(hashString(`ras|${district}|${region}|${programmeId}`))
+  const rCode = regionCode[region] ?? region.slice(0, 3).toUpperCase()
+  const dCode = districtCode(district)
+  const count = 10 + Math.floor(rand() * 10) // 10–19 RAs per programme
+  const usedSeq = new Set<number>()
+  const list: RaOption[] = []
+  for (let i = 0; i < count; i++) {
+    const surname = raSurnames[Math.floor(rand() * raSurnames.length)]
+    const given = raGivenNames[Math.floor(rand() * raGivenNames.length)]
+    let seq = 1 + Math.floor(rand() * 120)
+    while (usedSeq.has(seq)) seq = (seq % 120) + 1
+    usedSeq.add(seq)
+    const code = `NIRA/${rCode}/${dCode}/RA/${String(seq).padStart(3, '0')}`
+    list.push({ id: code, name: `${surname} ${given}`, code, programmeId })
+  }
+  return list.sort((a, b) => a.name.localeCompare(b.name))
+}
+
 // National cumulative summary for every programme — powers the overview band.
 export function getProgrammeSummaries(): ProgrammeSummary[] {
   return programmes.map((p) => {
