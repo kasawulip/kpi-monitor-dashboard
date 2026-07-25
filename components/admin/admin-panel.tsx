@@ -43,7 +43,7 @@ interface NavItem {
   id: SectionId
   label: string
   icon: typeof LayoutDashboard
-  group: 'Monitor' | 'Operations' | 'Administration'
+  group: 'Monitor' | 'Operations' | 'RA Management' | 'Administration'
 }
 
 const navItems: NavItem[] = [
@@ -51,14 +51,14 @@ const navItems: NavItem[] = [
   { id: 'programmes', label: 'Programme Targets', icon: Target, group: 'Monitor' },
   { id: 'uploads', label: 'Data Uploads', icon: Upload, group: 'Operations' },
   { id: 'reports', label: 'Reports', icon: FileBarChart, group: 'Operations' },
-  { id: 'ra-replacements', label: 'RA Replacements', icon: Users, group: 'Operations' },
   { id: 'broadcast', label: 'Broadcast', icon: Megaphone, group: 'Operations' },
+  { id: 'ra-replacements', label: 'RA Replacements', icon: Users, group: 'RA Management' },
   { id: 'users', label: 'Users', icon: UserCog, group: 'Administration' },
   { id: 'suspensions', label: 'Suspensions', icon: PauseCircle, group: 'Administration' },
   { id: 'audit', label: 'Audit Log', icon: ScrollText, group: 'Administration' },
 ]
 
-const groups: NavItem['group'][] = ['Monitor', 'Operations', 'Administration']
+const groups: NavItem['group'][] = ['Monitor', 'Operations', 'RA Management', 'Administration']
 
 export function AdminPanel() {
   const [section, setSection] = useState<SectionId>('overview')
