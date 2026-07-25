@@ -14,7 +14,8 @@ import { ProgrammeOverview } from './programme-overview'
 import { KpiGrid } from './kpi-grid'
 import { DistrictSnapshot } from './district-snapshot'
 import { DailyEntryDialog } from './daily-entry-dialog'
-import { ChevronRight, MapPin, Building2, ClipboardPlus, Lock } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronRight, MapPin, Building2, ClipboardPlus, Lock, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function Dashboard() {
@@ -69,10 +70,19 @@ export function Dashboard() {
                 </p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground">
-              <Lock className="size-3.5" aria-hidden="true" />
-              Scope locked to your district
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                <Lock className="size-3.5" aria-hidden="true" />
+                Scope locked to your district
+              </span>
+              <Link
+                href="/admin"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <Shield className="size-3.5" aria-hidden="true" />
+                Admin panel
+              </Link>
+            </div>
           </div>
         </div>
 
