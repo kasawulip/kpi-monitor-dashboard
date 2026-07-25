@@ -663,6 +663,245 @@ export function getDaySnapshot(
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* PRO-IS (programme super-admin) — panel mock data + helpers                 */
+/* -------------------------------------------------------------------------- */
+
+export const programmeCode: Record<ProgrammeId, string> = {
+  'card-issuance': 'CARD-ISS',
+  'nid-registration': 'NIN-REG',
+  opencrvs: 'OCRVS-NT',
+}
+
+export type ProgrammeStatus =
+  | 'DRAFT'
+  | 'SCHEDULED'
+  | 'ACTIVE'
+  | 'PAUSED_NATIONALLY'
+  | 'ADMINISTRATIVELY_COMPLETED'
+  | 'CLOSED'
+
+export const programmeStatuses: { value: ProgrammeStatus; label: string }[] = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SCHEDULED', label: 'Scheduled' },
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'PAUSED_NATIONALLY', label: 'Paused nationally' },
+  { value: 'ADMINISTRATIVELY_COMPLETED', label: 'Admin completed' },
+  { value: 'CLOSED', label: 'Closed' },
+]
+
+export interface TargetHistoryEntry {
+  id: string
+  changedAt: string
+  changedBy: string
+  summary: string
+}
+
+export interface ProgrammeConfig {
+  id: ProgrammeId
+  name: string
+  code: string
+  dailyTargetPerRa: number
+  workingDaysPerWeek: number
+  workingDays: number
+  durationDays: number
+  startDate: string
+  endDate: string
+  requiredOperationalDays: number
+  status: ProgrammeStatus
+  version: number
+  active: boolean
+  history: TargetHistoryEntry[]
+}
+
+export function getProgrammeConfigs(): ProgrammeConfig[] {
+  const startDate = '2026-06-01'
+  const endDate = '2026-09-08'
+  const statuses: ProgrammeStatus[] = ['ACTIVE', 'ACTIVE', 'SCHEDULED']
+  return programmes.map((p, i) => ({
+    id: p.id,
+    name: p.name,
+    code: programmeCode[p.id],
+    dailyTargetPerRa: p.targetPerRaDay,
+    workingDaysPerWeek: 6,
+    workingDays: 86,
+    durationDays: 100,
+    startDate,
+    endDate,
+    requiredOperationalDays: 100,
+    status: statuses[i],
+    version: 3 + i,
+    active: true,
+    history: [
+      {
+        id: `${p.id}-h1`,
+        changedAt: '2026-05-20T09:12:00Z',
+        changedBy: 'a.mwanga (PRO-IS)',
+        summary: `Set daily target to ${p.targetPerRaDay}/RA and duration to 100 days`,
+      },
+      {
+        id: `${p.id}-h2`,
+        changedAt: '2026-06-01T06:30:00Z',
+        changedBy: 'a.mwanga (PRO-IS)',
+        summary: 'Exercise window opened; status → ACTIVE',
+      },
+    ],
+  }))
+}
+
+export type UserRole = 'PRO-IS' | 'SRO-FS' | 'DRO'
+
+export interface AdminUser {
+  id: string
+  username: string
+  fullName: string
+  role: UserRole
+  regionName: string | null
+  districtName: string | null
+  isActive: boolean
+  mustChangePassword: boolean
+}
+
+export function getAdminUsers(): AdminUser[] {
+  const seeds: Omit<AdminUser, 'id'>[] = [
+    { username: 'a.mwanga', fullName: 'Aloysius Mwanga', role: 'PRO-IS', regionName: null, districtName: null, isActive: true, mustChangePassword: false },
+    { username: 's.nabirye', fullName: 'Sarah Nabirye', role: 'DRO', regionName: 'Eastern Region', districtName: 'Tororo', isActive: true, mustChangePassword: false },
+    { username: 'j.okello', fullName: 'Joseph Okello', role: 'SRO-FS', regionName: 'Eastern Region', districtName: null, isActive: true, mustChangePassword: false },
+    { username: 'g.atim', fullName: 'Grace Atim', role: 'SRO-FS', regionName: 'North Eastern Region', districtName: null, isActive: true, mustChangePassword: true },
+    { username: 'p.wasswa', fullName: 'Peter Wasswa', role: 'DRO', regionName: 'Central Region', districtName: 'Mukono', isActive: true, mustChangePassword: false },
+    { username: 'r.kemigisha', fullName: 'Ruth Kemigisha', role: 'DRO', regionName: 'Western Region', districtName: 'Mbarara', isActive: false, mustChangePassword: false },
+    { username: 'd.ojok', fullName: 'Denis Ojok', role: 'DRO', regionName: 'North Western Region', districtName: 'Gulu', isActive: true, mustChangePassword: true },
+    { username: 'h.namutebi', fullName: 'Harriet Namutebi', role: 'SRO-FS', regionName: 'Central Region', districtName: null, isActive: true, mustChangePassword: false },
+    { username: 'i.kizza', fullName: 'Isaac Kizza', role: 'DRO', regionName: 'Mid Western Region', districtName: 'Hoima', isActive: true, mustChangePassword: false },
+    { username: 't.mugisha', fullName: 'Timothy Mugisha', role: 'DRO', regionName: 'Western Region', districtName: 'Kabale', isActive: false, mustChangePassword: false },
+  ]
+  return seeds.map((u, i) => ({ id: `user-${i + 1}`, ...u }))
+}
+
+export interface Suspension {
+  id: string
+  programmeId: ProgrammeId
+  programmeName: string
+  programmeCode: string
+  startDate: string
+  endDate: string | null
+  reason: string | null
+}
+
+export function getSuspensions(): Suspension[] {
+  return [
+    {
+      id: 'susp-1',
+      programmeId: 'opencrvs',
+      programmeName: 'OpenCRVS Notification',
+      programmeCode: programmeCode.opencrvs,
+      startDate: '2026-06-09',
+      endDate: '2026-06-09',
+      reason: 'Heroes Day public holiday',
+    },
+    {
+      id: 'susp-2',
+      programmeId: 'card-issuance',
+      programmeName: 'Card Issuance',
+      programmeCode: programmeCode['card-issuance'],
+      startDate: '2026-08-01',
+      endDate: null,
+      reason: 'Card personalisation system upgrade',
+    },
+    {
+      id: 'susp-3',
+      programmeId: 'nid-registration',
+      programmeName: 'NID / NIN Registration',
+      programmeCode: programmeCode['nid-registration'],
+      startDate: '2026-07-15',
+      endDate: '2026-07-16',
+      reason: 'Nationwide kit firmware update',
+    },
+  ]
+}
+
+export interface AuditLogEntry {
+  id: string
+  createdAt: string
+  action: string
+  actorUsername: string
+  actorRole: UserRole
+  entityType: string
+  entityId: string
+  ip: string
+  metadata: Record<string, unknown>
+}
+
+export const auditActions = [
+  'LOGIN',
+  'USER_CREATED',
+  'PASSWORD_RESET',
+  'TARGET_UPDATED',
+  'PROGRAMME_STATUS_CHANGED',
+  'SUSPENSION_CREATED',
+  'SUSPENSION_CANCELLED',
+  'RA_REPLACED',
+  'REPORT_GENERATED',
+]
+
+export function getAuditLogs(): AuditLogEntry[] {
+  const rand = seeded(hashString('audit-log-seed'))
+  const actors: { u: string; r: UserRole }[] = [
+    { u: 'a.mwanga', r: 'PRO-IS' },
+    { u: 'j.okello', r: 'SRO-FS' },
+    { u: 's.nabirye', r: 'DRO' },
+    { u: 'h.namutebi', r: 'SRO-FS' },
+    { u: 'p.wasswa', r: 'DRO' },
+  ]
+  const entities = ['user', 'programme', 'suspension', 'ra', 'report', 'session']
+  const rows: AuditLogEntry[] = []
+  const base = Date.parse('2026-06-30T16:40:00Z')
+  for (let i = 0; i < 42; i++) {
+    const actor = actors[Math.floor(rand() * actors.length)]
+    const action = auditActions[Math.floor(rand() * auditActions.length)]
+    const entity = entities[Math.floor(rand() * entities.length)]
+    const ts = new Date(base - i * (37 * 60 * 1000 + Math.floor(rand() * 900000)))
+    rows.push({
+      id: `audit-${String(i + 1).padStart(3, '0')}`,
+      createdAt: ts.toISOString(),
+      action,
+      actorUsername: actor.u,
+      actorRole: actor.r,
+      entityType: entity,
+      entityId: `${entity}-${Math.floor(rand() * 9000 + 1000)}`,
+      ip: `10.${Math.floor(rand() * 250)}.${Math.floor(rand() * 250)}.${Math.floor(rand() * 250)}`,
+      metadata: {
+        action,
+        actor: actor.u,
+        note: 'Illustrative audit metadata for the prototype.',
+      },
+    })
+  }
+  return rows
+}
+
+// National headline stats for the PRO-IS overview hero band.
+export function getNationalStats() {
+  const summaries = getProgrammeSummaries()
+  const achieved = summaries.reduce((s, p) => s + p.achieved, 0)
+  const target = summaries.reduce((s, p) => s + p.target, 0)
+  const activeRas = summaries.reduce((s, p) => s + p.activeRas, 0)
+  const achievement = target ? Math.round((achieved / target) * 1000) / 10 : 0
+  return {
+    achievement,
+    achieved,
+    target,
+    activeRas,
+    programmeCount: summaries.length,
+    regionCount: regionNames.length,
+    status: statusFor(achievement),
+  }
+}
+
+export function fmtNumber(n: number) {
+  return n.toLocaleString('en-US')
+}
+
 export const statusMeta: Record<Status, { label: string; dot: string; text: string; bg: string; border: string }> = {
   good: {
     label: 'On track',
