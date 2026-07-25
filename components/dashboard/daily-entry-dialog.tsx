@@ -29,7 +29,6 @@ export function DailyEntryDialog({ open, onClose, programme }: DailyEntryDialogP
   const [operated, setOperated] = useState<Operated>('')
   const [raId, setRaId] = useState('')
   const [count, setCount] = useState('')
-  const [notes, setNotes] = useState('')
   const [reasonCode, setReasonCode] = useState('')
   const [explanation, setExplanation] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -62,7 +61,6 @@ export function DailyEntryDialog({ open, onClose, programme }: DailyEntryDialogP
     setOperated('')
     setRaId('')
     setCount('')
-    setNotes('')
     setReasonCode('')
     setExplanation('')
     setError(null)
@@ -132,7 +130,6 @@ export function DailyEntryDialog({ open, onClose, programme }: DailyEntryDialogP
     setOperated('')
     setRaId('')
     setCount('')
-    setNotes('')
     setReasonCode('')
     setExplanation('')
     setSuccess(null)
@@ -311,16 +308,6 @@ export function DailyEntryDialog({ open, onClose, programme }: DailyEntryDialogP
                       onChange={(e) => setCount(e.target.value.replace(/[^0-9]/g, ''))}
                       placeholder="e.g. 42"
                       className={cn(selectClass, 'font-mono')}
-                    />
-                  </Field>
-
-                  <Field label="Notes (optional)">
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      rows={2}
-                      placeholder="Anything unusual about this day? (weather, downtime, etc.)"
-                      className={cn(selectClass, 'resize-y')}
                     />
                   </Field>
                 </>
