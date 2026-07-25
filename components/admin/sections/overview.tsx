@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { TrendingUp, Target as TargetIcon, Users, Globe2, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import {
   getDashboardData,
   getNationalStats,
@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils'
 import { ProgrammeOverview } from '@/components/dashboard/programme-overview'
 import { RegionalPerformance } from '@/components/dashboard/regional-performance'
+import { DistrictSnapshot } from '@/components/dashboard/district-snapshot'
 import { StatusPill } from '@/components/dashboard/status-pill'
 import { PageHeader, btnGhost } from '../ui'
 
@@ -22,34 +23,6 @@ export function AdminOverview({ onNavigateProgrammes }: { onNavigateProgrammes: 
   const summaries = useMemo(() => getProgrammeSummaries(), [])
   const data = useMemo(() => getDashboardData(programme, null, 'exercise'), [programme])
   const meta = statusMeta[stats.status]
-
-  const cards = [
-    {
-      label: 'National achievement',
-      value: `${stats.achievement}%`,
-      icon: TrendingUp,
-      caption: 'Cumulative vs. expected to date',
-      accent: meta.text,
-    },
-    {
-      label: 'Output to date',
-      value: fmtNumber(stats.achieved),
-      icon: TargetIcon,
-      caption: `of ${fmtNumber(stats.target)} target`,
-    },
-    {
-      label: 'Active RAs',
-      value: fmtNumber(stats.activeRas),
-      icon: Users,
-      caption: 'Deployed across all programmes',
-    },
-    {
-      label: 'Coverage',
-      value: `${stats.regionCount} regions`,
-      icon: Globe2,
-      caption: `${stats.programmeCount} programmes reporting`,
-    },
-  ]
 
   return (
     <div className="space-y-6">
@@ -64,35 +37,6 @@ export function AdminOverview({ onNavigateProgrammes }: { onNavigateProgrammes: 
           </span>
         }
       />
-
-      {/* National stat band */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {cards.map((c) => {
-          const Icon = c.icon
-          return (
-            <div
-              key={c.label}
-              className="rounded-2xl border border-border bg-card p-4 shadow-sm"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {c.label}
-                </span>
-                <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
-              </div>
-              <div
-                className={cn(
-                  'mt-2 font-mono text-2xl font-semibold tabular-nums text-foreground',
-                  c.accent,
-                )}
-              >
-                {c.value}
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">{c.caption}</p>
-            </div>
-          )
-        })}
-      </div>
 
       {/* Programme overview band */}
       <ProgrammeOverview
@@ -157,6 +101,14 @@ export function AdminOverview({ onNavigateProgrammes }: { onNavigateProgrammes: 
               })}
           </ol>
         </div>
+      </div>
+
+      {/* District daily output */}
+      <div>
+        <div className="mb-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+          <span className="text-xs font-semibold uppercase tracking-wide">District daily output</span>
+        </div>
+        <DistrictSnapshot defaultProgramme={programme} />
       </div>
     </div>
   )
