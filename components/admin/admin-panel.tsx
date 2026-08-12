@@ -28,6 +28,7 @@ import { UsersSection } from './sections/users'
 import { SuspensionsSection } from './sections/suspensions'
 import { AuditLogSection } from './sections/audit-log'
 import { AddRaSection } from './sections/add-ra'
+import { SwitchRaProgrammeSection } from './sections/switch-ra-programme'
 import { PlaceholderSection } from './sections/placeholder'
 
 type SectionId =
@@ -36,6 +37,7 @@ type SectionId =
   | 'uploads'
   | 'reports'
   | 'add-ra'
+  | 'switch-ra'
   | 'ra-replacements'
   | 'broadcast'
   | 'users'
@@ -56,6 +58,7 @@ const navItems: NavItem[] = [
   { id: 'reports', label: 'Reports', icon: FileBarChart, group: 'Operations' },
   { id: 'broadcast', label: 'Broadcast', icon: Megaphone, group: 'Operations' },
   { id: 'add-ra', label: 'Add New RA', icon: UserPlus, group: 'RA Management' },
+  { id: 'switch-ra', label: 'Switch RA Programme', icon: ArrowLeftRight, group: 'RA Management' },
   { id: 'ra-replacements', label: 'RA Replacements', icon: Users, group: 'RA Management' },
   { id: 'users', label: 'Users', icon: UserCog, group: 'Administration' },
   { id: 'suspensions', label: 'Suspensions', icon: PauseCircle, group: 'Administration' },
@@ -146,6 +149,7 @@ export function AdminPanel() {
             {section === 'suspensions' && <SuspensionsSection />}
             {section === 'audit' && <AuditLogSection />}
             {section === 'add-ra' && <AddRaSection />}
+            {section === 'switch-ra' && <SwitchRaProgrammeSection />}
             {section === 'uploads' && (
               <PlaceholderSection
                 title="Data Uploads"
