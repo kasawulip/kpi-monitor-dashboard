@@ -13,8 +13,22 @@ function useClock() {
   return now
 }
 
-export function SiteHeader() {
+interface SiteUser {
+  name: string
+  role: string
+  scope: string
+}
+
+export function SiteHeader({ user }: { user?: SiteUser }) {
   const now = useClock()
+  const initials = user
+    ? user.name
+        .split(' ')
+        .map((p) => p[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+    : ''
   const time = now
     ? now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     : '--:--:--'
@@ -44,13 +58,28 @@ export function SiteHeader() {
             <div className="font-mono text-sm font-semibold tabular-nums text-foreground">{time}</div>
             <div className="font-mono text-[11px] text-muted-foreground">{date}</div>
           </div>
-          <button
-            type="button"
-            className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
-            <LogIn className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Sign in</span>
-          </button>
+          {user ? (
+            <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card py-1.5 pl-1.5 pr-3">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+                {initials}
+              </span>
+              <div className="hidden leading-tight sm:block">
+                <div className="text-sm font-medium text-foreground">{user.name}</div>
+                <div className="text-[11px] text-muted-foreground">
+                  <span className="font-semibold text-accent-foreground">{user.role}</span>
+                  {` · ${user.scope}`}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <LogIn className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Sign in</span>
+            </button>
+          )}
         </div>
       </div>
 

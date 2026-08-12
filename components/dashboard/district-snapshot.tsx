@@ -20,11 +20,16 @@ const accentBar: Record<string, string> = {
 
 export function DistrictSnapshot({
   defaultProgramme = 'nid-registration',
+  lockedRegion,
+  lockedDistrict,
 }: {
   defaultProgramme?: ProgrammeId
+  lockedRegion?: string
+  lockedDistrict?: string
 }) {
-  const [region, setRegion] = useState<string>('')
-  const [district, setDistrict] = useState<string>('')
+  const locked = Boolean(lockedRegion && lockedDistrict)
+  const [region, setRegion] = useState<string>(lockedRegion ?? '')
+  const [district, setDistrict] = useState<string>(lockedDistrict ?? '')
   const [programme, setProgramme] = useState<ProgrammeId>(defaultProgramme)
   const [date, setDate] = useState<string>('2026-06-30')
 
@@ -40,37 +45,56 @@ export function DistrictSnapshot({
     <section className="rounded-2xl border border-border bg-card shadow-sm">
       <div className="border-b border-border p-4 md:p-5">
         <h2 className="text-sm font-semibold text-foreground md:text-base">
-          District daily snapshot
+          {locked ? 'My district daily snapshot' : 'District daily snapshot'}
         </h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          Choose a region, district, programme and date to view that day&apos;s
-          registration-assistant performance.
+          {locked
+            ? "Choose a programme and date to view that day's registration-assistant performance for your district."
+            : "Choose a region, district, programme and date to view that day's registration-assistant performance."}
         </p>
 
+        {/* Locked scope chips (DRO) */}
+        {locked && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground">
+              <MapPin className="size-3.5 text-muted-foreground" aria-hidden="true" />
+              {lockedRegion}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground">
+              <Building2 className="size-3.5 text-muted-foreground" aria-hidden="true" />
+              {lockedDistrict}
+            </span>
+          </div>
+        )}
+
         {/* Cascading selectors */}
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <SelectField
-            id="snap-region"
-            label="Region"
-            icon={<MapPin className="size-4" aria-hidden="true" />}
-            value={region}
-            placeholder="Select region"
-            options={regionNames.map((r) => ({ value: r, label: r }))}
-            onChange={(v) => {
-              setRegion(v)
-              setDistrict('')
-            }}
-          />
-          <SelectField
-            id="snap-district"
-            label="District"
-            icon={<Building2 className="size-4" aria-hidden="true" />}
-            value={district}
-            placeholder={region ? 'Select district' : 'Select region first'}
-            disabled={!region}
-            options={districtOptions.map((d) => ({ value: d, label: d }))}
-            onChange={setDistrict}
-          />
+        <div className={cn('mt-4 grid gap-3 sm:grid-cols-2', locked ? 'lg:grid-cols-2' : 'lg:grid-cols-4')}>
+          {!locked && (
+            <SelectField
+              id="snap-region"
+              label="Region"
+              icon={<MapPin className="size-4" aria-hidden="true" />}
+              value={region}
+              placeholder="Select region"
+              options={regionNames.map((r) => ({ value: r, label: r }))}
+              onChange={(v) => {
+                setRegion(v)
+                setDistrict('')
+              }}
+            />
+          )}
+          {!locked && (
+            <SelectField
+              id="snap-district"
+              label="District"
+              icon={<Building2 className="size-4" aria-hidden="true" />}
+              value={district}
+              placeholder={region ? 'Select district' : 'Select region first'}
+              disabled={!region}
+              options={districtOptions.map((d) => ({ value: d, label: d }))}
+              onChange={setDistrict}
+            />
+          )}
           <SelectField
             id="snap-programme"
             label="Programme"
