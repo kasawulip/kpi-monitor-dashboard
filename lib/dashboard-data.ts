@@ -430,6 +430,82 @@ export function getDistrictProgrammeSummaries(
   })
 }
 
+/* -------------------------------------------------------------------------- */
+/* District Detail — per-district daily indicators for a programme + date     */
+/* Used by PRO-IS / SRO drill-down. Programme-specific and selected-date aware.*/
+/* -------------------------------------------------------------------------- */
+
+export type DailyStatus = Status | 'none'
+
+export interface DistrictDailyRow {
+  district: string
+  region: string
+  // Authoritative programme-specific active RA establishment applicable on the date.
+  noOfRas: number
+  // Of those RAs, how many submitted an entry for the selected date.
+  rasSubmitted: number
+  // No of RAs that did not submit an entry for the selected date.
+  rasWithoutEntry: number
+  // Sum of RA output captured for the selected date.
+  dailyOutput: number
+  // No of RAs x per-RA daily target (fixed by PRO-IS per programme).
+  dailyTarget: number
+  // dailyOutput / dailyTarget, one decimal place.
+  achievement: number
+  // dailyOutput / noOfRas, one decimal place (0.0 when noOfRas is 0).
+  avgPerRa: number
+  status: DailyStatus
+}
+
+// Per-district daily rows for a programme on a selected reporting date.
+// regionScope optionally limits the rows to a single region (e.g. an SRO's region).
+export function getDistrictDailyRows(
+  programmeId: ProgrammeId,
+  dateISO: string,
+  regionScope?: string,
+): DistrictDailyRow[] {
+  const programme = programmes.find((p) => p.id === programmeId) ?? programmes[0]
+  const regions = regionScope ? [regionScope] : regionNames
+  return regions.flatMap((rName) =>
+    (districtsByRegion[rName] ?? []).map((district) => {
+      // Authoritative programme-specific establishment for this district/date.
+      const noOfRas = getDistrictRas(programmeId, rName, district).length
+      const rand = seeded(hashString(`daily|${district}|${rName}|${programmeId}|${dateISO}`))
+
+      // ~22% of district-days record no entries at all ("No entries").
+      const noEntriesDay = rand() < 0.22
+      const rasSubmitted = noEntriesDay
+        ? 0
+        : Math.min(noOfRas, Math.round(noOfRas * (0.35 + rand() * 0.65)))
+      const rasWithoutEntry = noOfRas - rasSubmitted
+
+      // Output only comes from RAs that submitted; per-RA output varies around target.
+      const perRaOutput = programme.targetPerRaDay * (0.45 + rand() * 0.85)
+      const dailyOutput = Math.round(rasSubmitted * perRaOutput)
+      const dailyTarget = noOfRas * programme.targetPerRaDay
+
+      const achievement = dailyTarget
+        ? Math.round((dailyOutput / dailyTarget) * 1000) / 10
+        : 0
+      const avgPerRa = noOfRas ? Math.round((dailyOutput / noOfRas) * 10) / 10 : 0
+      const status: DailyStatus = rasSubmitted === 0 ? 'none' : statusFor(achievement)
+
+      return {
+        district,
+        region: rName,
+        noOfRas,
+        rasSubmitted,
+        rasWithoutEntry,
+        dailyOutput,
+        dailyTarget,
+        achievement,
+        avgPerRa,
+        status,
+      }
+    }),
+  )
+}
+
 export interface ProgrammeSummary {
   id: ProgrammeId
   name: string
